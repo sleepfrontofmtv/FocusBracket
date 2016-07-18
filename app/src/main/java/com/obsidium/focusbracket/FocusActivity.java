@@ -20,7 +20,7 @@ import java.util.LinkedList;
 
 public class FocusActivity extends BaseActivity implements SurfaceHolder.Callback, CameraEx.ShutterListener
 {
-    private static final int COUNTDOWN_SECONDS = 5;
+    private static final int COUNTDOWN_SECONDS = 3;
 
     private SurfaceHolder       m_surfaceHolder;
     private CameraEx            m_camera;
@@ -34,7 +34,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     private TextView            m_tvMsg;
     private TextView            m_tvInstructions;
 
-    enum State { error, setMin, setMax, setNumPics, shoot }
+    enum State { error, setMin, setMax, setNumPics, lapse, waitshutterlapse, shoot }
     private State               m_state = State.setMin;
 
     private int                 m_minFocus;
@@ -378,9 +378,16 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     }
 
     @Override
-    protected boolean onEnterKeyDown()
+    protected boolean onShutterKeyUp() {
+        return true;
+    }
+
+    @Override
+    protected boolean onShutterKeyDown()
     {
         // Don't use onEnterKeyUp - we sometimes get an onEnterKeyUp event when launching the app
+        // sleepfrontofmtv: changed onEnterKeyDown to onShutterKeyDown, to support external shutter release.
+        // sleepfrontofmtv: Add case waitshutterlapse, waiting for external shutter release pressed down.
         switch (m_state)
         {
             case setMin:
@@ -400,8 +407,13 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 break;
             case shoot:
                 abortShooting();
-                setState(State.setMin);
+                setState(State.waitshutterlapse);
                 break;
+            case waitshutterlapse:
+                m_countdown = COUNTDOWN_SECONDS;
+                m_handler.postDelayed(m_countDownRunnable, 1000);
+                setState(State.shoot);
+
         }
         return true;
     }
