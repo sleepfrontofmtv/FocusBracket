@@ -34,7 +34,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     private TextView            m_tvMsg;
     private TextView            m_tvInstructions;
 
-    enum State { error, setMin, setMax, setNumPics, lapse, waitshutterlapse, shoot }
+    enum State { error, setMin, setMax, setNumPics, waitshutterlapse, shoot }
     private State               m_state = State.setMin;
 
     private int                 m_minFocus;
@@ -278,6 +278,11 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 m_tvMsg.setText(String.format("Starting in %d...", m_countdown));
                 m_tvInstructions.setVisibility(View.GONE);
                 break;
+            case waitshutterlapse:
+                m_tvMsg.setVisibility(View.VISIBLE);
+                m_tvMsg.setText(String.format("Waiting External Shutter singal %d...", m_countdown));
+                m_tvInstructions.setVisibility(View.GONE);
+                break;
         }
     }
 
@@ -291,6 +296,8 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
         params.setSceneMode(CameraEx.ParametersModifier.SCENE_MODE_MANUAL_EXPOSURE);
         modifier.setDriveMode(CameraEx.ParametersModifier.DRIVE_MODE_SINGLE);
         params.setFocusMode(CameraEx.ParametersModifier.FOCUS_MODE_MANUAL);
+        modifier.setDROMode(CameraEx.ParametersModifier.DRO_MODE_OFF);
+        modifier.setIntervalRecTime(CameraEx.ParametersModifier.5);
         modifier.setSelfTimer(0);
         m_camera.getNormalCamera().setParameters(params);
 
@@ -344,6 +351,10 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 break;
             case shoot:
                 initFocusQueue();
+                m_countdown = COUNTDOWN_SECONDS;
+                m_handler.postDelayed(m_countDownRunnable, 1000);
+                break;
+            case waitshutterlapse:
                 m_countdown = COUNTDOWN_SECONDS;
                 m_handler.postDelayed(m_countDownRunnable, 1000);
                 break;
@@ -410,8 +421,6 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 setState(State.waitshutterlapse);
                 break;
             case waitshutterlapse:
-                m_countdown = COUNTDOWN_SECONDS;
-                m_handler.postDelayed(m_countDownRunnable, 1000);
                 setState(State.shoot);
 
         }
