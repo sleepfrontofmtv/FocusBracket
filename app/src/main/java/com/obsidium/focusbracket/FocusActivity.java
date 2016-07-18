@@ -207,7 +207,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     private void startFocusing()
     {
         m_waitingForFocus = true;
-        m_tvMsg.setText("Focusing...");
+        m_tvMsg.setText("Focusing...%d", m_curFocus);
         m_tvMsg.setVisibility(View.VISIBLE);
         m_tvInstructions.setText(String.format("%d remaining", m_focusQueue.size()));
         m_tvInstructions.setVisibility(View.VISIBLE);
