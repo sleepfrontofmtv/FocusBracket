@@ -324,14 +324,14 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
         m_autoReviewControl.setPictureReviewTime(0);
     }
 
-    private void abortShooting()
-    {
-        m_waitingForFocus = false;
-        m_handler.removeCallbacks(m_checkFocusRunnable);
-        m_handler.removeCallbacks(m_countDownRunnable);
-        m_focusQueue = null;
-        m_pictureCounts = null;
-    }
+//-    private void abortShooting()
+//    {
+//        m_waitingForFocus = false;
+//        m_handler.removeCallbacks(m_checkFocusRunnable);
+//        m_handler.removeCallbacks(m_countDownRunnable);
+//        m_focusQueue = null;
+//        m_pictureCounts = null;
+//    }
 
     private void setState(State state)
     {
@@ -416,7 +416,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 setState(State.shoot);
                 break;
             case shoot:
-                abortShooting();
+                //-temp-abortShooting();
                 setState(State.waitshutterlapse);
                 break;
             case waitshutterlapse:
@@ -438,7 +438,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     {
         super.onPause();
 
-        abortShooting();
+        //-temp-abortShooting();
 
         m_surfaceHolder.removeCallback(this);
         m_autoReviewControl.setPictureReviewTime(m_pictureReviewTime);
