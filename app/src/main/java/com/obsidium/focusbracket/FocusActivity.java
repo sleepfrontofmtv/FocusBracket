@@ -297,7 +297,6 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
         modifier.setDriveMode(CameraEx.ParametersModifier.DRIVE_MODE_SINGLE);
         params.setFocusMode(CameraEx.ParametersModifier.FOCUS_MODE_MANUAL);
         modifier.setDROMode(CameraEx.ParametersModifier.DRO_MODE_OFF);
-        modifier.setIntervalRecTime(CameraEx.ParametersModifier.5);
         modifier.setSelfTimer(0);
         m_camera.getNormalCamera().setParameters(params);
 
