@@ -20,7 +20,7 @@ import java.util.LinkedList;
 
 public class FocusActivity extends BaseActivity implements SurfaceHolder.Callback, CameraEx.ShutterListener
 {
-    private static final int COUNTDOWN_SECONDS = 3;
+    private static final int COUNTDOWN_SECONDS = 5;
 
     private SurfaceHolder       m_surfaceHolder;
     private CameraEx            m_camera;
@@ -34,7 +34,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     private TextView            m_tvMsg;
     private TextView            m_tvInstructions;
 
-    enum State { error, setMin, setMax, setNumPics, waitshutterlapse, shoot }
+    enum State { error, setMin, setMax, setNumPics, shoot }
     private State               m_state = State.setMin;
 
     private int                 m_minFocus;
@@ -278,11 +278,6 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 m_tvMsg.setText(String.format("Starting in %d...", m_countdown));
                 m_tvInstructions.setVisibility(View.GONE);
                 break;
-            case waitshutterlapse:
-                m_tvMsg.setVisibility(View.VISIBLE);
-                m_tvMsg.setText(String.format("Waiting External Shutter singal %d...", m_countdown));
-                m_tvInstructions.setVisibility(View.GONE);
-                break;
         }
     }
 
@@ -296,7 +291,6 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
         params.setSceneMode(CameraEx.ParametersModifier.SCENE_MODE_MANUAL_EXPOSURE);
         modifier.setDriveMode(CameraEx.ParametersModifier.DRIVE_MODE_SINGLE);
         params.setFocusMode(CameraEx.ParametersModifier.FOCUS_MODE_MANUAL);
-        modifier.setDROMode(CameraEx.ParametersModifier.DRO_MODE_OFF);
         modifier.setSelfTimer(0);
         m_camera.getNormalCamera().setParameters(params);
 
@@ -324,14 +318,14 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
         m_autoReviewControl.setPictureReviewTime(0);
     }
 
-//-    private void abortShooting()
-//    {
-//        m_waitingForFocus = false;
-//        m_handler.removeCallbacks(m_checkFocusRunnable);
-//        m_handler.removeCallbacks(m_countDownRunnable);
-//        m_focusQueue = null;
-//        m_pictureCounts = null;
-//    }
+    private void abortShooting()
+    {
+        m_waitingForFocus = false;
+        m_handler.removeCallbacks(m_checkFocusRunnable);
+        m_handler.removeCallbacks(m_countDownRunnable);
+        m_focusQueue = null;
+        m_pictureCounts = null;
+    }
 
     private void setState(State state)
     {
@@ -350,10 +344,6 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 break;
             case shoot:
                 initFocusQueue();
-                m_countdown = COUNTDOWN_SECONDS;
-                m_handler.postDelayed(m_countDownRunnable, 1000);
-                break;
-            case waitshutterlapse:
                 m_countdown = COUNTDOWN_SECONDS;
                 m_handler.postDelayed(m_countDownRunnable, 1000);
                 break;
@@ -388,16 +378,9 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     }
 
     @Override
-    protected boolean onShutterKeyUp() {
-        return true;
-    }
-
-    @Override
-    protected boolean onShutterKeyDown()
+    protected boolean onEnterKeyDown()
     {
         // Don't use onEnterKeyUp - we sometimes get an onEnterKeyUp event when launching the app
-        // sleepfrontofmtv: changed onEnterKeyDown to onShutterKeyDown, to support external shutter release.
-        // sleepfrontofmtv: Add case waitshutterlapse, waiting for external shutter release pressed down.
         switch (m_state)
         {
             case setMin:
@@ -416,12 +399,9 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
                 setState(State.shoot);
                 break;
             case shoot:
-                //-temp-abortShooting();
-                setState(State.waitshutterlapse);
+                abortShooting();
+                setState(State.setMin);
                 break;
-            case waitshutterlapse:
-                setState(State.shoot);
-
         }
         return true;
     }
@@ -438,7 +418,7 @@ public class FocusActivity extends BaseActivity implements SurfaceHolder.Callbac
     {
         super.onPause();
 
-        //-temp-abortShooting();
+        abortShooting();
 
         m_surfaceHolder.removeCallback(this);
         m_autoReviewControl.setPictureReviewTime(m_pictureReviewTime);
